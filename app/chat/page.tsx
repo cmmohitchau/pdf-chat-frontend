@@ -42,7 +42,7 @@ const [messages, setMessages] = useState<Message[]>([
         ])
         setLoading(true)
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/query/?q=${encodeURIComponent(input)}`)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/query?q=${encodeURIComponent(input)}`)
 
         const result = await response.json()
 
