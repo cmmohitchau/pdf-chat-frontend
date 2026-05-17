@@ -6,7 +6,10 @@ import { Upload, MessageSquareText, Sparkles, ArrowRight } from 'lucide-react'
 
 export default function Home() {
   const router = useRouter()
-
+  console.log("url : " , process.env.NEXT_PUBLIC_BACKEND_URL);
+  console.log("client id : " , process.env.GOOGLE_CLIENT_ID);
+  
+  
   const features = [
     {
       icon: Upload,
@@ -30,12 +33,12 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-white text-black overflow-hidden">
-      {/* Hero Section */}
+      
       <section className="relative flex min-h-screen items-center justify-center px-6 py-20">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(0,0,0,0.06),transparent_45%)]" />
 
         <div className="mx-auto grid max-w-7xl items-center gap-16 lg:grid-cols-2">
-          {/* Left Content */}
+          
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -127,7 +130,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features */}
       <section className="px-6 pb-24">
         <div className="mx-auto max-w-7xl">
           <div className="mb-16 text-center">
