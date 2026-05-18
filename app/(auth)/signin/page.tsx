@@ -12,35 +12,32 @@ export default function SignInPage() {
   const [error, setError] = useState("");
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) {
-      setError("Please fill in all fields.");
-      return;
-    }
-    setError("");
-    setIsLoading(true);
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/signin` , {
-        method : 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body : JSON.stringify({ email , password})
-      })
-      const result = await response.json()
-      console.log(result);
+  e.preventDefault()
+  if (!email || !password) {
+    setError("Please fill in all fields.")
+    return
+  }
+  setError("")
+  setIsLoading(true)
 
-      if (result?.error) {
-        setError("Invalid email or password.");
-      } else {
-        window.location.href = "/chat";
-      }
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setIsLoading(false);
+  try {
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    })
+
+    if (result?.error) {
+      setError("Invalid email or password.")
+    } else {
+      window.location.href = "/chat"
     }
-  };
+  } catch {
+    setError("Something went wrong. Please try again.")
+  } finally {
+    setIsLoading(false)
+  }
+}
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
