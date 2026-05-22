@@ -6,10 +6,7 @@ import { Upload, MessageSquareText, Sparkles, ArrowRight } from 'lucide-react'
 
 export default function Home() {
   const router = useRouter()
-  console.log("url : " , process.env.NEXT_PUBLIC_BACKEND_URL);
-  console.log("client id : " , process.env.GOOGLE_CLIENT_ID);
-  
-  
+
   const features = [
     {
       icon: Upload,

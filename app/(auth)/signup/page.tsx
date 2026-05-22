@@ -18,7 +18,6 @@ export default function SignInPage() {
     }
     setError("");
     setIsLoading(true);
-    console.log("backend url : " , process.env.NEXT_PUBLIC_BACKEND_URL);
     
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/signup` , {
@@ -29,7 +28,6 @@ export default function SignInPage() {
         body : JSON.stringify({ email , password , name})
       })
       const result = await response.json()
-      console.log(result);
 
       if (result?.error) {
         setError("Invalid email or password.");

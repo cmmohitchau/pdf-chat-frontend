@@ -2,6 +2,7 @@
 import NextAuth, { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
+import Email from "next-auth/providers/email"
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -10,7 +11,6 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
 
-    // Add this — manual login now goes through NextAuth too
     CredentialsProvider({
       name: "credentials",
       credentials: {

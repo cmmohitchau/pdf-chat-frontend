@@ -90,7 +90,6 @@ const [messages, setMessages] = useState<Message[]>([
             body: formData,
         })
 
-        console.log(`response : ${response}`);
         }
     } catch(e) {
         console.log("error : " ,e );
