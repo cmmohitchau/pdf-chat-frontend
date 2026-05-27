@@ -1,5 +1,5 @@
 'use client'
-
+import { signIn, signOut, useSession } from "next-auth/react"
 import { useRef, useState } from 'react'
 import {
   Send,
@@ -16,6 +16,7 @@ interface Message {
 }
 
 export default function Chat() {
+  const { data : session } = useSession();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -23,6 +24,8 @@ export default function Chat() {
         'Upload a PDF and start asking questions about it.',
     },
   ])
+
+  
 
   const [input, setInput] = useState('')
   const [fileName, setFileName] = useState('')
@@ -380,6 +383,30 @@ export default function Chat() {
                 Research your documents
               </p>
             </div>
+          </div>
+
+          <div>
+            {session ? (
+
+              <div className="flex items-center gap-4">
+                <p className="text-sm text-[#111827]">
+                  {session.user?.name || session.user?.email}
+                </p>
+                <button
+                  onClick={() => signOut()}
+                  className="text-sm font-medium text-[#374151] hover:text-[#111827]"
+                >
+                  Sign out
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => signIn()}
+                className="text-sm font-medium text-[#374151] hover:text-[#111827]"
+              >
+                Sign in
+              </button>
+            )}
           </div>
         </header>
 

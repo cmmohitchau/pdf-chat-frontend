@@ -2,7 +2,6 @@
 import NextAuth, { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
-import Email from "next-auth/providers/email"
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -12,7 +11,7 @@ export const authOptions: NextAuthOptions = {
     }),
 
     CredentialsProvider({
-      name: "credentials",
+      name: "Email",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
@@ -41,6 +40,7 @@ export const authOptions: NextAuthOptions = {
           name: data.user.name,
           accessToken: data.access_token,
         }
+        
       },
     }),
   ],
@@ -49,29 +49,32 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async jwt({ token, account, profile, user }) {
-      // Google login
-      if (account?.provider === "google" && profile) {
+
+      if (user) {
+        token.userId = (user as any).id;
+        token.email = (user as any).email;
+        token.accessToken = (user as any).token;
+      }
+      
+      if (account?.provider === "google" && user) {
         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/google`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: profile.email, name: profile.name }),
+          body: JSON.stringify({ email: user.email, name: user.name }),
         })
         const data = await response.json()
         token.accessToken = data.access_token
-        token.userId = profile.sub
-      }
-
-      // Credentials login — user object only exists on first sign-in
-      if (account?.provider === "credentials" && user) {
-        token.accessToken = (user as any).accessToken
-        token.userId = user.id
+        token.userId = data.user.id
       }
 
       return token
     },
 
     async session({ session, token }) {
-      if (session.user) session.user.id = token.userId as string
+      if (session.user) {
+        session.user.id = token.userId as string
+        session.user.email = token.email as string
+      }
       session.accessToken = token.accessToken as string
       return session
     },
