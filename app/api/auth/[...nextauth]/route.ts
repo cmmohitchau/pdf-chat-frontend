@@ -47,18 +47,20 @@ export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
 
   callbacks: {
-    async signIn({user , account }) {
+    async signIn({user , account , profile }) {
         if (account?.provider === "google") {
           const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/google`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: user.email, name: user.name }),
+            body: JSON.stringify({ id_token: account.id_token }),
           })
-
           const data = await response.json();
-
-        (user as any).accessToken = data.access_token
-        (user as any).id = String(data.user.id)
+          console.log("Google auth response:", data);
+        (user as any).accessToken = data.access_token;
+        (user as any).id = String(data.user.id);
+        (user as any).email = data.user.email;
+        (user as any).name = data.user.name;
+        console.log("User after Google auth:", user);
           
         }
         return true
@@ -70,6 +72,7 @@ export const authOptions: NextAuthOptions = {
         token.email = (user as any).email;
         token.accessToken = (user as any).accessToken;
       }
+      console.log("JWT callback - token:", token);
   
       return token
     },
@@ -79,7 +82,8 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.userId as string
         session.user.email = token.email as string
       }
-      session.accessToken = token.accessToken as string
+      session.accessToken = token.accessToken as string;
+      console.log("Session callback - session:", session);
       return session
     },
   },
