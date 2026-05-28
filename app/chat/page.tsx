@@ -9,6 +9,7 @@ import {
   PanelLeft,
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
+import { headers } from "next/dist/server/request/headers"
 
 interface Message {
   role: 'user' | 'assistant'
@@ -55,10 +56,12 @@ export default function Chat() {
     setLoading(true)
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/query?q=${encodeURIComponent(
-          input
-        )}`
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/query?q=${encodeURIComponent(input)}`,{
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+      }
       )
 
       const result = await response.json()
@@ -97,6 +100,9 @@ export default function Chat() {
         {
           method: 'POST',
           body: formData,
+          headers: {
+            Authorization: `Bearer ${session?.accessToken}`,
+          },
         }
       )
     } catch (e) {
