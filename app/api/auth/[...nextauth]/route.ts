@@ -33,7 +33,6 @@ export const authOptions: NextAuthOptions = {
         const data = await response.json()
         if (!data.access_token) return null
 
-        // Return user object — NextAuth stores this in the JWT
         return {
           id: String(data.user.id),
           email: data.user.email,
@@ -48,25 +47,30 @@ export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
 
   callbacks: {
-    async jwt({ token, account, profile, user }) {
+    async signIn({user , account }) {
+        if (account?.provider === "google") {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/google`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: user.email, name: user.name }),
+          })
+
+          const data = await response.json();
+
+        (user as any).accessToken = data.access_token
+        (user as any).id = String(data.user.id)
+          
+        }
+        return true
+      },
+    async jwt({ token, user }) {
 
       if (user) {
         token.userId = (user as any).id;
         token.email = (user as any).email;
-        token.accessToken = (user as any).token;
+        token.accessToken = (user as any).accessToken;
       }
-      
-      if (account?.provider === "google" && user) {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/google`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: user.email, name: user.name }),
-        })
-        const data = await response.json()
-        token.accessToken = data.access_token
-        token.userId = data.user.id
-      }
-
+  
       return token
     },
 
@@ -81,7 +85,7 @@ export const authOptions: NextAuthOptions = {
   },
 
   pages: {
-    signIn: "/signin", // redirect here when unauthenticated
+    signIn: "/signin", 
   },
 
   secret: process.env.NEXTAUTH_SECRET,
