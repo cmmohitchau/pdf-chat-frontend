@@ -1,8 +1,11 @@
+//signin
+
 "use client";
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { Eye, EyeOff, Lock, Mail, Layers } from "lucide-react";
+import { useRouter } from "next/navigation"
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -10,7 +13,7 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-
+  const router = useRouter();
   const handleEmailSignIn = async (e: React.FormEvent) => {
   e.preventDefault()
   if (!email || !password) {
@@ -30,7 +33,7 @@ export default function SignInPage() {
     if (result?.error) {
       setError("Invalid email or password.")
     } else {
-      window.location.href = "/chat"
+      router.push("/chat")
     }
   } catch {
     setError("Something went wrong. Please try again.")
