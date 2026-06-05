@@ -1,15 +1,15 @@
 'use client'
 import { signIn, signOut, useSession } from "next-auth/react"
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   Send,
   Upload,
   FileText,
   Sparkles,
   PanelLeft,
+  Check
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
-import { headers } from "next/dist/server/request/headers"
 
 interface Message {
   role: 'user' | 'assistant'
@@ -18,6 +18,8 @@ interface Message {
 
 export default function Chat() {
   const { data : session } = useSession();
+  const [sources, setSources] = useState<string[]>([]);
+  const [selected , setSelected] = useState<string[]>(sources);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -25,8 +27,6 @@ export default function Chat() {
         'Upload a PDF and start asking questions about it.',
     },
   ])
-
-  
 
   const [input, setInput] = useState('')
   const [fileName, setFileName] = useState('')
@@ -42,8 +42,36 @@ export default function Chat() {
   const fileInputRef =
     useRef<HTMLInputElement | null>(null)
 
+  useEffect(() => {
+    const storedSources = localStorage.getItem('sources')
+    if (storedSources) {
+      setSources(JSON.parse(storedSources))
+    }
+  }, [])
+
+  const toggleSource = (source: string) => {
+    if (selected.includes(source)) {
+      setSelected((prev) =>
+        prev.filter((s) => s !== source)
+      )
+    } else {
+      setSelected((prev) => [...prev, source])
+    }
+  }
+
   const handleSend = async () => {
     if (!input.trim()) return
+
+    if(selected.length === 0){
+      setMessages( (prev) => [...prev, 
+      {
+      role: 'assistant',
+      content:
+        'Please select at least one source to query from.',
+      },
+      ])
+      return
+    }
 
     const userMessage: Message = {
       role: 'user',
@@ -56,15 +84,21 @@ export default function Chat() {
     setLoading(true)
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/query?q=${encodeURIComponent(input)}`,{
-        method: 'GET',
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/query`,{
+        method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${session?.accessToken}`,
         },
+        body: JSON.stringify({
+          query: input,
+          sources: selected
+        })
       }
       )
 
       const result = await response.json()
+      console.log("API response: ", result)
 
       const aiMessage: Message = {
         role: 'assistant',
@@ -105,6 +139,9 @@ export default function Chat() {
           },
         }
       )
+
+      setSources((prev) => [...prev, file.name])
+      localStorage.setItem('sources', JSON.stringify([...sources, file.name]))
     } catch (e) {
       console.log(e)
     } finally {
@@ -238,33 +275,48 @@ export default function Chat() {
               </div>
 
               {/* FILE CARD */}
-              {fileName && (
-                <div
-                  className="
-                    mt-6 rounded-[24px]
-                    border border-black/6
-                    bg-white/90 p-4
-                    shadow-[0_4px_20px_rgba(0,0,0,0.04)]
-                    transition-all duration-200
-                    hover:-translate-y-px
-                    hover:shadow-md
-                  "
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#F3F4F6]">
-                      <FileText className="h-5 w-5 text-[#4B5563]" />
-                    </div>
+              {sources.length > 0 && (
+                <div className="mt-6">
+                  {sources.map((source, index) => (
+                    <div
+                      key={index}
+                      className="
+                        rounded-[24px]
+                        border border-black/6
+                        bg-white/90 p-4
+                        shadow-[0_4px_20px_rgba(0,0,0,0.04)]
+                        transition-all duration-200
+                        hover:-translate-y-px
+                        hover:shadow-md
+                      "
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#F3F4F6]">
+                          <FileText className="h-5 w-5 text-[#4B5563]" />
+                        </div>
 
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-[#111827]">
-                        {fileName}
-                      </p>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-[#111827]">
+                            {source}
+                          </p>
 
-                      <p className="mt-1 text-xs text-[#6B7280]">
-                        Ready for chat
-                      </p>
+                          <p className="mt-1 text-xs text-[#6B7280]">
+                            Ready for chat
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => toggleSource(source)}
+                          className={`ml-auto h-5 w-5 rounded-full border ${
+                            selected.includes(source)
+                              ? <Check size={14} />
+                              : 'border-[#D1D5DB]'
+                          }`}
+                        >
+                          {selected.includes(source) && <Check size={14} />}
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
               )}
 
@@ -456,7 +508,7 @@ export default function Chat() {
                 </div>
 
                 {/* QUICK PROMPTS */}
-                <div className="mt-10 flex flex-wrap justify-center gap-3">
+                <div className="mt-10 flex flex-wrap justify-center gap-3 mb-6">
                   {[
                     'Summarize this document',
                     'Explain this simply',
@@ -480,6 +532,7 @@ export default function Chat() {
                         hover:-translate-y-px
                         hover:bg-white
                         hover:shadow-md
+                
                       "
                     >
                       {item}
