@@ -712,37 +712,6 @@ export default function Chat() {
                               content={message.content}
                               citations={message.citations}
                             />
-
-                            {/* Citations footer for this message */}
-                            {message.citations && Object.keys(message.citations).length > 0 && (
-                              <div className="mt-4 border-t border-black/5 pt-3">
-                                <div className="flex flex-wrap gap-2">
-                                  {Object.entries(message.citations).map(([idx, cit]) => (
-                                    <button
-                                      key={idx}
-                                      onClick={() => {
-                                        setActiveCitations(message.citations!)
-                                        openCitationPopup(idx)
-                                      }}
-                                      className="
-                                        flex items-center gap-1.5
-                                        rounded-xl border border-amber-200
-                                        bg-amber-50 px-3 py-1.5
-                                        text-[11px] font-medium text-amber-700
-                                        transition-all duration-150
-                                        hover:bg-amber-100
-                                      "
-                                    >
-                                      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-amber-200 text-[9px] font-bold">
-                                        {idx}
-                                      </span>
-                                      <span className="max-w-[140px] truncate">{cit.document_name}</span>
-                                      <span className="text-amber-500">p.{cit.page + 1}</span>
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
                           </>
                         )}
                       </div>
@@ -794,14 +763,7 @@ export default function Chat() {
             </div>
           </div>
 
-          {/* Citations panel (desktop right sidebar) */}
-          {citationsPanelOpen && Object.keys(activeCitations).length > 0 && (
-            <CitationsPanel
-              citations={activeCitations}
-              onSelect={openCitationPopup}
-              onClose={() => setCitationsPanelOpen(false)}
-            />
-          )}
+
         </div>
       </section>
 
